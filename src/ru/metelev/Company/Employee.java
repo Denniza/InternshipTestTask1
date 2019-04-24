@@ -7,6 +7,17 @@ public class Employee {
     private int departmentId;
     private int salary;
 
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "name='" + name + '\'' +
+                ", surName='" + surName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", departmentId=" + departmentId +
+                ", salary=" + salary +
+                '}';
+    }
+
     public Employee(String... args) {
     this.surName = args[0];
     this.name = args[1];

@@ -34,6 +34,10 @@ public class Company {
         }
     }
 
+    public void setAllEmployeeList(List<Employee> allEmployeeList) {
+        this.allEmployeeList = (ArrayList<Employee>) allEmployeeList;
+    }
+
     public String getCompanyName() {
         return companyName;
     }
@@ -46,7 +50,7 @@ public class Company {
         departmentMap.put(department.getDepartmentId(), department);
     }
 
-    public void addDepartment(List<Department> departmentList){
+    public void addDepartment(Department... departmentList){
         for (Department department:departmentList){
             departmentMap.put(department.getDepartmentId(),department);
         }

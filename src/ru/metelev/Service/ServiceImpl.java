@@ -4,6 +4,7 @@ import ru.metelev.Company.Department;
 import ru.metelev.Company.Employee;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class ServiceImpl implements Service {
     @Override
     public List<Employee> uploadEmployeeServiceFromFile(String path) throws IOException {
         List<Employee> allEmployeeList = new ArrayList<>();
-        String [] lines = Files.readAllLines(Paths.get(path)).toArray(new String[0]);
+        String [] lines = Files.readAllLines(Paths.get(path), Charset.forName("windows-1251")).toArray(new String[0]);
         for(String element:lines){
             String [] params = element.split(";");
             allEmployeeList.add(new Employee(params));

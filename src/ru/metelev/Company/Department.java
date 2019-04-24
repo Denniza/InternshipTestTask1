@@ -13,6 +13,14 @@ public class Department {
         this.employeeList = new ArrayList<>();
     }
 
+    @Override
+    public String toString() {
+        return "Department{" +
+                "departmentId=" + departmentId +
+                ", employeeList=" + employeeList +
+                '}';
+    }
+
     public void setDepartmentId(int departmentId) {
         this.departmentId = departmentId;
     }

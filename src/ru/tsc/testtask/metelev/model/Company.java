@@ -1,9 +1,8 @@
-package ru.tsc.testtask.metelev.company;
+package ru.tsc.testtask.metelev.model;
 
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -24,7 +23,7 @@ public class Company {
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
     }
-    //Добавляет департамент если департамента с таким ID нет и возвращает True, иначе false и замены не происходит
+
     public boolean addDepartment(Department department){
         if(!departmentMap.containsKey(department.getDepartmentId())){
             departmentMap.put(department.getDepartmentId(), department);
@@ -41,7 +40,7 @@ public class Company {
     public ArrayList<Employee> getAllEmployeeList() {
         ArrayList<Employee> result;
         result = new ArrayList<>();
-        for(Map.Entry<Integer,Department> element: departmentMap.entrySet()){
+        for(Map.Entry<Integer,Department> element : departmentMap.entrySet()){
             result.addAll(element.getValue().getEmployeeList());
         }
         return result;

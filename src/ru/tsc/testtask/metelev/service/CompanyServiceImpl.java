@@ -1,9 +1,8 @@
 package ru.tsc.testtask.metelev.service;
 
-import com.sun.deploy.cache.InMemoryLocalApplicationProperties;
-import ru.tsc.testtask.metelev.company.Company;
-import ru.tsc.testtask.metelev.company.Department;
-import ru.tsc.testtask.metelev.company.Employee;
+import ru.tsc.testtask.metelev.model.Company;
+import ru.tsc.testtask.metelev.model.Department;
+import ru.tsc.testtask.metelev.model.Employee;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -13,14 +12,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 //Класс для манипулирования данными, позволяет загружать данные о работниках
-public class CompanyServiceImpl implements DownloadEmployeeFromFileService {
+public class CompanyServiceImpl implements CompanyService {
 
     //метод проверяет валидность данных каждого работника
     //проверяется корректность Имени, Id департамента и зарплаты
     @Override
     public boolean employeeDataValidation(String[] employeeData) {
         if (employeeData.length != 3) return false;//если в строке больше 3х параметров
-        if (employeeData[0].isEmpty() || employeeData[0].matches(".*\\d+.*"))
+        if (employeeData[0].isEmpty() || employeeData[0].matches(".*[\\d^!@#$%&*]+.*"))
             return false;//если Имя пустое или в нём есть цифры
         try {
             int departmentId = Integer.parseInt(employeeData[1]);
@@ -37,36 +36,55 @@ public class CompanyServiceImpl implements DownloadEmployeeFromFileService {
         return true;
     } //метод работает, тесты пройдены
 
-    //метод принимает путь к файлу, кодировку и объект company, в который будут заносится данные.
+    //метод принимает путь к файлу, кодировку и объект model, в который будут заносится данные.
     // загружает список работников из файла
     // метод бросает IOException, при отсутствии файла с таким именем
     @Override
     public void downloadEmployeeFromFile(String path, String textCode, Company company) throws IOException {
-        Map<Integer, Department> departmentMap = company.getDepartmentMap();
+        Map<Integer, Department> departmentMap=company.getDepartmentMap();
         BufferedReader reader = new BufferedReader(new InputStreamReader
-                (new FileInputStream(path)
-                        , Charset.forName(textCode)));
+                                                    (new FileInputStream(path),
+                                                            Charset.forName(textCode)));
         String line;
-        while ((line = reader.readLine()) != null) {
+        while ((line=reader.readLine()) != null) {
             String[] params = line.split(";");
             if (employeeDataValidation(params)) {
                 if (departmentMap.get(Integer.parseInt(params[1])) != null) {
                     departmentMap.get(Integer.parseInt(params[1]))
-                            .getEmployeeList().add(new Employee(params[0]
-                            , params[1], params[2]));
+                            .getEmployeeList().add(new Employee(params[0], params[1], params[2]));
                 } else {
                     company.addDepartment(new Department(Integer.parseInt(params[1])));
                     departmentMap.get(Integer.parseInt(params[1]))
-                            .getEmployeeList().add(new Employee(params[0]
-                            , params[1], params[2]));
-                }
+                            .getEmployeeList().add(new Employee(params[0], params[1], params[2]));
+                } //end inner if
             } else {
                 System.out.println("Ошибка в данных работника");
-            }
-        }//end cycle
+            } //end if
+        }//end while cycle
     } //end method
     //метод возвращает список возможных переводов между отделами, при котором средняя зарплата
     //увеличится в обоих отделах
+
+    //метод записывает полученные результаты в файл, файл не перезаписывается, если он существует, данные добавляются в конец
+    @Override
+    public void uploadResults(String path, ArrayList<ArrayList<String>> results) {
+        if(results.size() != 0) {
+            try (FileWriter writer = new FileWriter(path, true)) {
+                for (ArrayList<String> arr : results) {
+                    writer.write(String.format("Возможен перевод из департамента %s в департамент %s , где средние зарплаты: %s и %s соответственно,\n" +
+                            "следующих сотрудников: ", arr.get(0), arr.get(1), arr.get(2), arr.get(3)));
+                    for (int i = 6; i < arr.size(); i++) {
+                        writer.write(arr.get(i) + "\n");
+                    }
+                    writer.write(String.format("В результате перевода, средние зарплаты в департаментах изменятся на: %s и %s соответственно.\n", arr.get(4), arr.get(5)));
+                }
+            } catch (IOException e) {
+                System.out.println("Некорректный путь для файла с результатами");
+            }
+        }
+    }
+
+    //метод создает список с возможными переводами между двумя отделами
     @Override
     public ArrayList<ArrayList<String>> getPossibleOptimalTransfersBetweenTwoDepartments(Department first, Department second) {
         ArrayList<ArrayList<String>> result = new ArrayList<>();
@@ -77,18 +95,13 @@ public class CompanyServiceImpl implements DownloadEmployeeFromFileService {
         //определяем в каком отделе средняя зарплата выше и создаем копии объектов для работы
         //создаем копии департаментов для работы с данными и определения средних зарплат при переходах
         if (first.getAverageSalary().compareTo(second.getAverageSalary()) >= 0) {
-            richDepartment = new Department(first.getDepartmentId());
-            notReachDepartment = new Department(second.getDepartmentId());
-            richDepartment.setEmployeeList(new ArrayList<>(first.getEmployeeList()));
-            notReachDepartment.setEmployeeList(new ArrayList<>(second.getEmployeeList()));
+            richDepartment = first;
+            notReachDepartment = second;
+
         } else {
-            richDepartment = new Department(second.getDepartmentId());
-            notReachDepartment = new Department(first.getDepartmentId());
-            richDepartment.setEmployeeList(new ArrayList<>(second.getEmployeeList()));
-            notReachDepartment.setEmployeeList(new ArrayList<>(first.getEmployeeList()));
+            richDepartment = second;
+            notReachDepartment = first;
         }
-        //создаем копии департаментов для работы с данными и определения средних зарплат при переходах
-        //цикл проходит по работникам отдела в котором средняя зарплата выше
         for (Employee employee : richDepartment.getEmployeeList()) {
             //если зарплата сотрудника ниже средней в своем отделе, но выше, чем во втором отделе,
             //то такого сотрудника можно перевести, записываем в результирующий набор
@@ -140,11 +153,10 @@ public class CompanyServiceImpl implements DownloadEmployeeFromFileService {
         result.add(String.valueOf(notRichDepartment.getDepartmentId()));//департамент куда
         result.add(richDepartment.getAverageSalary().toString());//средняя зарплата до перевода
         result.add(notRichDepartment.getAverageSalary().toString());//средняя зарплата до перевода
-        richDepartment.getAverageSalary();
         //далее для каждого отдела считаем как изменится зарплата после перевода и добавляем значения в результат
         result.add(getSalaryChanges(richDepartment,employeeList,false).toString());
         result.add(getSalaryChanges(notRichDepartment,employeeList,true).toString());
-        for(Employee employee:employeeList){
+        for(Employee employee : employeeList){
             result.add(employee.getName());
         }
         return result;
@@ -161,8 +173,7 @@ public class CompanyServiceImpl implements DownloadEmployeeFromFileService {
             result = result.divide(BigDecimal.valueOf(department.getEmployeeList().size()
                                 + employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
             return result;
-        }
-        else{
+        } else{
             for (Employee employee : employeeList) {
                 result = result.subtract(employee.getSalary());
             }

@@ -1,4 +1,4 @@
-package ru.tsc.testtask.metelev.company;
+package ru.tsc.testtask.metelev.model;
 
 import java.math.BigDecimal;
 

@@ -1,4 +1,4 @@
-package ru.tsc.testtask.metelev.company;
+package ru.tsc.testtask.metelev.model;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -21,14 +21,6 @@ public class Department {
                 '}';
     }
     //метод возвращает среднюю зарплату в отделе
-    public BigDecimal getAverageSalary(){
-        BigDecimal result = new BigDecimal(0).setScale(2,BigDecimal.ROUND_HALF_UP);
-        for(Employee employee:employeeList){
-            result = result.add(employee.getSalary());
-        }
-        result = result.divide(BigDecimal.valueOf(employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
-        return result;
-    }
 
     public void setEmployeeList(List<Employee> employeeList) {
         this.employeeList = employeeList;
@@ -42,6 +34,17 @@ public class Department {
         return employeeList;
     }
 
+    //метод возвращает среднюю зарплату в отделе
+    public BigDecimal getAverageSalary(){
+        BigDecimal result = new BigDecimal(0).setScale(2,BigDecimal.ROUND_HALF_UP);
+        for(Employee employee:employeeList){
+            result = result.add(employee.getSalary());
+        }
+        result = result.divide(BigDecimal.valueOf(employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
+        return result;
+    }
+
+    //метод для получения общей зарплаты отдела
     public BigDecimal getTotalDepartmentSalary(){
         BigDecimal resultSalaryDepartmentSalary = getAverageSalary()//получем общую зарплату отдала
                 .multiply(BigDecimal.valueOf(employeeList.size()*1.0));

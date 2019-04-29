@@ -171,14 +171,14 @@ public class CompanyServiceImpl implements CompanyService {
                 result = result.add(employee.getSalary());
             }
             result = result.divide(BigDecimal.valueOf(department.getEmployeeList().size()
-                                + employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
+                                    + employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
             return result;
         } else{
             for (Employee employee : employeeList) {
                 result = result.subtract(employee.getSalary());
             }
             result = result.divide(BigDecimal.valueOf(department.getEmployeeList().size()
-                    - employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
+                                    - employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
             return result;
         }
     }

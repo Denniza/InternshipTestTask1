@@ -30,7 +30,8 @@ public class CompanyView {
     //запрос ввода номеров деартаментов
     public int [] askUserForDepartments(){
         System.out.println("Введите поочередно номера департаментов, в которых вы хотите осуществить перевод сотрудников:");
-        int a,b;
+        int a;
+        int b;
         while(true) {
             try {
                 Scanner scanner1 = new Scanner(System.in);

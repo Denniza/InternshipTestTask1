@@ -20,7 +20,7 @@ public class Department {
                 ", employeeList=" + employeeList +
                 '}';
     }
-
+    //метод возвращает среднюю зарплату в отделе
     public BigDecimal getAverageSalary(){
         BigDecimal result = new BigDecimal(0).setScale(2,BigDecimal.ROUND_HALF_UP);
         for(Employee employee:employeeList){
@@ -40,6 +40,12 @@ public class Department {
 
     public List<Employee> getEmployeeList() {
         return employeeList;
+    }
+
+    public BigDecimal getTotalDepartmentSalary(){
+        BigDecimal resultSalaryDepartmentSalary = getAverageSalary()//получем общую зарплату отдала
+                .multiply(BigDecimal.valueOf(employeeList.size()*1.0));
+        return resultSalaryDepartmentSalary;
     }
 
 }

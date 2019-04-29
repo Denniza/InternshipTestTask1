@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 //Класс для манипулирования данными, позволяет загружать данные о работниках
 public class CompanyServiceImpl implements DownloadEmployeeFromFileService {
@@ -68,7 +69,7 @@ public class CompanyServiceImpl implements DownloadEmployeeFromFileService {
     //увеличится в обоих отделах
     @Override
     public ArrayList<ArrayList<String>> getPossibleOptimalTransfersBetweenTwoDepartments(Department first, Department second) {
-        ArrayList<ArrayList<String>> result = new ArrayList<>();//это будет список с результатом
+        ArrayList<ArrayList<String>> result = new ArrayList<>();
         Department richDepartment;// департамент с более высокой средней зарплатой
         Department notReachDepartment;
         ArrayList<Employee> transfers = new ArrayList<>();
@@ -118,7 +119,7 @@ public class CompanyServiceImpl implements DownloadEmployeeFromFileService {
         int[] arr = new int[numberOfElements];
         outer:
         while (true) {
-            int i = numberOfElements - 1;//ставим курсов в самую правую ячейку
+            int i = numberOfElements - 1;//ставим курсор в самую правую ячейку
             while (arr[i] == 1) {//движемся влево, если ячейка переполнена
                 arr[i] = 0;//записываем в ячейку 0, т.к. идет перенос разряда
                 i--;//сдвиг влево
@@ -141,25 +142,33 @@ public class CompanyServiceImpl implements DownloadEmployeeFromFileService {
         result.add(notRichDepartment.getAverageSalary().toString());//средняя зарплата до перевода
         richDepartment.getAverageSalary();
         //далее для каждого отдела считаем как изменится зарплата после перевода и добавляем значения в результат
-        BigDecimal resultSalaryInRichDepartment = richDepartment.getAverageSalary()//получем общую зарплату отдала
-                .multiply(BigDecimal.valueOf(richDepartment.getEmployeeList().size()*1.0));
-        for(Employee employee:employeeList){
-            resultSalaryInRichDepartment = resultSalaryInRichDepartment.subtract(employee.getSalary());
-        }
-        resultSalaryInRichDepartment = resultSalaryInRichDepartment
-                .divide(BigDecimal.valueOf(richDepartment.getEmployeeList().size() - employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
-        result.add(resultSalaryInRichDepartment.toString());
-        BigDecimal resultSalaryInNotRichDepartment = notRichDepartment.getAverageSalary()//получем общую зарплату отдала
-                .multiply(BigDecimal.valueOf(notRichDepartment.getEmployeeList().size()*1.0));
-        for(Employee employee:employeeList){
-            resultSalaryInNotRichDepartment = resultSalaryInNotRichDepartment.add(employee.getSalary());
-        }
-        resultSalaryInNotRichDepartment = resultSalaryInNotRichDepartment
-                .divide(BigDecimal.valueOf(notRichDepartment.getEmployeeList().size() + employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
-        result.add(resultSalaryInNotRichDepartment.toString());
+        result.add(getSalaryChanges(richDepartment,employeeList,false).toString());
+        result.add(getSalaryChanges(notRichDepartment,employeeList,true).toString());
         for(Employee employee:employeeList){
             result.add(employee.getName());
         }
         return result;
+    }
+
+    //метод считает изменения зарплаты в отделе в зависимости от того, придут туда новые сотрудники или наоборот, уйдут
+    //третий параметр говорит о том, добавляются эти сотрудники или уходят
+    private BigDecimal getSalaryChanges(Department department, List<Employee> employeeList, boolean add){
+        BigDecimal result = department.getTotalDepartmentSalary();
+        if(add) {
+            for (Employee employee : employeeList) {
+                result = result.add(employee.getSalary());
+            }
+            result = result.divide(BigDecimal.valueOf(department.getEmployeeList().size()
+                                + employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
+            return result;
+        }
+        else{
+            for (Employee employee : employeeList) {
+                result = result.subtract(employee.getSalary());
+            }
+            result = result.divide(BigDecimal.valueOf(department.getEmployeeList().size()
+                    - employeeList.size()*1.0),2,BigDecimal.ROUND_HALF_UP);
+            return result;
+        }
     }
 }

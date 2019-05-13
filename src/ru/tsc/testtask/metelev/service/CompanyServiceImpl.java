@@ -62,8 +62,6 @@ public class CompanyServiceImpl implements CompanyService {
             } //end if
         }//end while cycle
     } //end method
-    //метод возвращает список возможных переводов между отделами, при котором средняя зарплата
-    //увеличится в обоих отделах
 
     //метод записывает полученные результаты в файл, файл не перезаписывается, если он существует, данные добавляются в конец
     @Override
@@ -84,16 +82,15 @@ public class CompanyServiceImpl implements CompanyService {
         }
     }
 
-    //метод создает список с возможными переводами между двумя отделами
+    //метод возвращает список возможных переводов между отделами, при котором средняя зарплата
+    //увеличится в обоих отделах
     @Override
     public ArrayList<ArrayList<String>> getPossibleOptimalTransfersBetweenTwoDepartments(Department first, Department second) {
         ArrayList<ArrayList<String>> result = new ArrayList<>();
         Department richDepartment;// департамент с более высокой средней зарплатой
         Department notReachDepartment;
-        ArrayList<Employee> transfers = new ArrayList<>();
 
         //определяем в каком отделе средняя зарплата выше и создаем копии объектов для работы
-        //создаем копии департаментов для работы с данными и определения средних зарплат при переходах
         if (first.getAverageSalary().compareTo(second.getAverageSalary()) >= 0) {
             richDepartment = first;
             notReachDepartment = second;
@@ -102,25 +99,28 @@ public class CompanyServiceImpl implements CompanyService {
             richDepartment = second;
             notReachDepartment = first;
         }
-        for (Employee employee : richDepartment.getEmployeeList()) {
-            //если зарплата сотрудника ниже средней в своем отделе, но выше, чем во втором отделе,
-            //то такого сотрудника можно перевести, записываем в результирующий набор
-            if (employee.getSalary().compareTo(richDepartment.getAverageSalary()) < 0
-                    && employee.getSalary().compareTo(notReachDepartment.getAverageSalary()) > 0) {
-                transfers.add(employee);
-            }
-        }
-        if(transfers.size()!=0) { // проверка на отсутствие записей
+
+        if(richDepartment.getEmployeeList().size()!=0) { // проверка на отсутствие записей
             //идем по списку возможных комбинаций выбирая работников из списка
-            for (int[] combination : getPossibleCombinations(transfers.size())) {
-                ArrayList<Employee> list = new ArrayList<>();
+            for (int[] combination : getPossibleCombinations(richDepartment.getEmployeeList().size())) {
+                ArrayList<Employee> transferList = new ArrayList<>();
                 for (int i = 0; i < combination.length; i++) {
                     if (combination[i] != 0) {
-                        list.add(transfers.get(i));
+                        transferList.add(richDepartment.getEmployeeList().get(i));
                     }
                 }
+                //считаем среднюю зарплату для каждой комбинации работников и если она удовлетворяет условию
+                //то заносим в результат
+                BigDecimal resultSalary = new BigDecimal(0);
+                for(Employee employee: transferList){
+                    resultSalary = resultSalary.add(employee.getSalary());
+                }
+                resultSalary = resultSalary.divide(BigDecimal.valueOf(transferList.size()),2, BigDecimal.ROUND_HALF_UP);
+                if(resultSalary.compareTo(richDepartment.getAverageSalary()) < 0
+                        && resultSalary.compareTo(notReachDepartment.getAverageSalary()) > 0){
+                    result.add(getPossibleAverageSalaryChanges(richDepartment, notReachDepartment, transferList));
+                }
                 //получаем данные об 1 из возможных переводов и добавляем в общий список
-                result.add(getPossibleAverageSalaryChanges(richDepartment, notReachDepartment, list));
             }//end cycle
         }
         return result;

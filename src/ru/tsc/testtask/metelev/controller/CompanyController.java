@@ -35,14 +35,17 @@ public class CompanyController {
         int [] departments;
         while(true){
             departments = companyController.view.askUserForDepartments();
+            int firstDepartment = departments[0];
+            int secondDepartment = departments[1];
             //проверяется валидность введенных данных, существуют ли такие департаменты,
             // если да, то вызывается метод сервиса
-                if(!companyController.company.getDepartmentMap().containsKey(departments[0])||!companyController.company.getDepartmentMap().containsKey(departments[1])) {
+                if(!companyController.company.getDepartmentMap().containsKey(firstDepartment)
+                        ||!companyController.company.getDepartmentMap().containsKey(secondDepartment)) {
                     System.out.println("Какого-либо из указанных департаментов не существует, введите корректные номера департаментов");
                 } else{
                     ArrayList<ArrayList<String>> results = companyController.service.getPossibleOptimalTransfersBetweenTwoDepartments
                             (companyController.company.getDepartmentMap()
-                                    .get(departments[0]), companyController.company.getDepartmentMap().get(departments[1]));
+                                    .get(firstDepartment), companyController.company.getDepartmentMap().get(secondDepartment));
                     companyController.view.showPossibleOptimalTransfersBetweenTwoDepartments(results);
                     companyController.service.uploadResults(args[2],results);
                  }

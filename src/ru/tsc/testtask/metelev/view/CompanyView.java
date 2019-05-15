@@ -1,5 +1,9 @@
 package ru.tsc.testtask.metelev.view;
 
+import ru.tsc.testtask.metelev.model.Employee;
+import ru.tsc.testtask.metelev.model.TargetDepartments;
+import ru.tsc.testtask.metelev.model.TransferInfo;
+
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -27,36 +31,37 @@ public class CompanyView {
         return line.equals("exit");
 
     }
-    //запрос ввода номеров деартаментов
-    public int [] askUserForDepartments(){
+
+    public TargetDepartments askUserForDepartments(){
         System.out.println("Введите поочередно номера департаментов, в которых вы хотите осуществить перевод сотрудников:");
-        int a;
-        int b;
+        TargetDepartments targetDepartments = new TargetDepartments();
         while(true) {
             try {
                 Scanner scanner1 = new Scanner(System.in);
-                a = scanner1.nextInt();
-                b = scanner1.nextInt();
+                targetDepartments.setFirstDepartment(scanner1.nextInt());
+                targetDepartments.setSecondDepartment(scanner1.nextInt());
                 break;
             } catch (InputMismatchException e){
                 System.out.println("Некорректные данные, введите целочисленные значения ID департаментов");
             }
         }
-        return new int[]{a,b};
+        return targetDepartments;
     }
-    //Вывод информации о переводах на экран
-    public void showPossibleOptimalTransfersBetweenTwoDepartments(ArrayList<ArrayList<String>> list){
+
+    public void showPossibleOptimalTransfersBetweenTwoDepartments(ArrayList<TransferInfo> list){
         if(list.size() == 0) {
             System.out.println("Отсутствуют возможные переводы.");
             return;
         }
-        for(ArrayList<String> arr : list){
+        for(TransferInfo transfer : list){
             System.out.printf("Возможен перевод из департамента %s в департамент %s , где средние зарплаты: %s и %s соответственно,\n" +
-                    "следующих сотрудников: ",arr.get(0),arr.get(1),arr.get(2),arr.get(3));
-            for (int i = 6; i < arr.size(); i++){
-                System.out.print(arr.get(i) + "\n");
+                    "следующих сотрудников: ",transfer.getRich().getDepartmentId(),transfer.getNotRich().getDepartmentId(),transfer.getRichAvgSalaryBeforeTransfer(),
+                            transfer.getNotRichAvgSalaryBeforeTransfer());
+            for (Employee employee:transfer.getEmployeesForTransfer()){
+                System.out.print(employee.getName() + "\n");
             }
-            System.out.printf("В результате перевода, средние зарплаты в департаментах изменятся на: %s и %s соответственно.\n",arr.get(4),arr.get(5));
+            System.out.printf("В результате перевода, средние зарплаты в департаментах изменятся на: %s и %s соответственно.\n",
+                    transfer.getRichAvgSalaryAfterTransfer(),transfer.getNotRichAvgSalaryAfterTransfer());
         }
     }
 }
